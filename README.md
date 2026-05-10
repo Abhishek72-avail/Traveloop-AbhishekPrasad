@@ -85,50 +85,5 @@ The project is structured as a monorepo using `pnpm` workspaces. To run the appl
    pnpm --filter @workspace/db run studio
    ```
 
----
 
-## 5. Application Screens
 
-*(Note: Create a folder named `screens` and place your images inside it. The images below will automatically link to those files once uploaded).*
-
-### Screen 1: Login & Registration
-![Screen 1](./screens/screen-1.png)
-
-### Screen 2: Dashboard / Home Screen
-![Screen 2](./screens/screen-2.png)
-
-### Screen 3: My Trips (Trip List)
-![Screen 3](./screens/screen-3.png)
-
-### Screen 4: Create Trip Form
-![Screen 4](./screens/screen-4.png)
-
-### Screen 5: Itinerary Builder Screen
-![Screen 5](./screens/screen-5.png)
-
-### Screen 6: Itinerary View / Timeline
-![Screen 6](./screens/screen-6.png)
-
-### Screen 7: City Discovery & Search
-![Screen 7](./screens/screen-7.png)
-
-### Screen 8: Activity Search
-![Screen 8](./screens/screen-8.png)
-
-### Screen 9: Budget Tracker Screen
-![Screen 9](./screens/screen-9.png)
-
-### Screen 10: Packing List Screen
-![Screen 10](./screens/screen-10.png)
-
-### Screen 11: Travel Notes
-![Screen 11](./screens/screen-11.png)
-
-### Screen 12: Admin Panel & Analytics
-![Screen 12](./screens/screen-12.png)
-
-### Screen 13: User Profile
-![Screen 13](./screens/screen-13.png)
-
-### Screen 14: Settings
-![Screen 14](./screens/screen-14.png)
