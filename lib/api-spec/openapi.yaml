@@ -1,22 +1,29 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Traveloop Travel Planning API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+  - name: auth
+  - name: trips
+  - name: stops
+  - name: cities
+  - name: activities
+  - name: checklist
+  - name: notes
+  - name: users
+  - name: analytics
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +31,1384 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # AUTH
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+
+  /auth/signup:
+    post:
+      operationId: signup
+      tags: [auth]
+      summary: Register new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignupInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout user
+      responses:
+        "200":
+          description: Logged out
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+
+  # USERS
+  /users/profile:
+    patch:
+      operationId: updateProfile
+      tags: [users]
+      summary: Update user profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /users/saved-destinations:
+    get:
+      operationId: getSavedDestinations
+      tags: [users]
+      summary: Get saved destinations
+      responses:
+        "200":
+          description: List of saved city ids
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+
+  /users/saved-destinations/{cityId}:
+    post:
+      operationId: saveDestination
+      tags: [users]
+      summary: Save a destination
+      parameters:
+        - name: cityId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Saved
+    delete:
+      operationId: unsaveDestination
+      tags: [users]
+      summary: Remove saved destination
+      parameters:
+        - name: cityId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Removed
+
+  # TRIPS
+  /trips:
+    get:
+      operationId: listTrips
+      tags: [trips]
+      summary: List all trips for current user
+      responses:
+        "200":
+          description: List of trips
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Trip"
+    post:
+      operationId: createTrip
+      tags: [trips]
+      summary: Create a new trip
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trip"
+
+  /trips/dashboard:
+    get:
+      operationId: getDashboard
+      tags: [trips]
+      summary: Get dashboard summary
+      responses:
+        "200":
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
+
+  /trips/{id}:
+    get:
+      operationId: getTrip
+      tags: [trips]
+      summary: Get a trip by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Trip details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripDetail"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateTrip
+      tags: [trips]
+      summary: Update a trip
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trip"
+    delete:
+      operationId: deleteTrip
+      tags: [trips]
+      summary: Delete a trip
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /trips/{id}/budget:
+    get:
+      operationId: getTripBudget
+      tags: [trips]
+      summary: Get budget breakdown for a trip
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Budget breakdown
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BudgetBreakdown"
+
+  /trips/{id}/public:
+    get:
+      operationId: getPublicTrip
+      tags: [trips]
+      summary: Get public view of trip (no auth required)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Public trip view
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripDetail"
+        "404":
+          description: Not found
+
+  /trips/{id}/share:
+    patch:
+      operationId: updateTripShare
+      tags: [trips]
+      summary: Toggle public sharing for trip
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShareUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trip"
+
+  /trips/{id}/copy:
+    post:
+      operationId: copyTrip
+      tags: [trips]
+      summary: Copy a public trip to own account
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "201":
+          description: Copied trip
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trip"
+
+  # STOPS
+  /trips/{tripId}/stops:
+    get:
+      operationId: listStops
+      tags: [stops]
+      summary: List stops for a trip
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of stops
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Stop"
+    post:
+      operationId: createStop
+      tags: [stops]
+      summary: Add a stop to a trip
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StopInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Stop"
+
+  /trips/{tripId}/stops/{stopId}:
+    patch:
+      operationId: updateStop
+      tags: [stops]
+      summary: Update a stop
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: stopId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StopUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Stop"
+    delete:
+      operationId: deleteStop
+      tags: [stops]
+      summary: Delete a stop
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: stopId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /trips/{tripId}/stops/{stopId}/activities:
+    post:
+      operationId: addActivityToStop
+      tags: [stops]
+      summary: Add an activity to a stop
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: stopId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StopActivityInput"
+      responses:
+        "201":
+          description: Activity added to stop
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StopActivity"
+
+  /trips/{tripId}/stops/{stopId}/activities/{activityId}:
+    delete:
+      operationId: removeActivityFromStop
+      tags: [stops]
+      summary: Remove activity from stop
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: stopId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: activityId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Removed
+
+  # CITIES
+  /cities:
+    get:
+      operationId: listCities
+      tags: [cities]
+      summary: Search and list cities
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+        - name: country
+          in: query
+          schema:
+            type: string
+        - name: region
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of cities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/City"
+
+  /cities/popular:
+    get:
+      operationId: getPopularCities
+      tags: [cities]
+      summary: Get popular/trending cities
+      responses:
+        "200":
+          description: Popular cities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/City"
+
+  /cities/{id}:
+    get:
+      operationId: getCity
+      tags: [cities]
+      summary: Get a city by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: City
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/City"
+
+  # ACTIVITIES
+  /activities:
+    get:
+      operationId: listActivities
+      tags: [activities]
+      summary: Browse and search activities
+      parameters:
+        - name: cityId
+          in: query
+          schema:
+            type: integer
+        - name: type
+          in: query
+          schema:
+            type: string
+        - name: maxCost
+          in: query
+          schema:
+            type: number
+        - name: q
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of activities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Activity"
+
+  /activities/{id}:
+    get:
+      operationId: getActivity
+      tags: [activities]
+      summary: Get an activity by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Activity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Activity"
+
+  # CHECKLIST
+  /trips/{tripId}/checklist:
+    get:
+      operationId: listChecklistItems
+      tags: [checklist]
+      summary: Get packing checklist for a trip
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Checklist items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChecklistItem"
+    post:
+      operationId: createChecklistItem
+      tags: [checklist]
+      summary: Add checklist item
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChecklistItemInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChecklistItem"
+
+  /trips/{tripId}/checklist/{itemId}:
+    patch:
+      operationId: updateChecklistItem
+      tags: [checklist]
+      summary: Update checklist item (toggle packed, rename, etc.)
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChecklistItemUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChecklistItem"
+    delete:
+      operationId: deleteChecklistItem
+      tags: [checklist]
+      summary: Delete checklist item
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /trips/{tripId}/checklist/reset:
+    post:
+      operationId: resetChecklist
+      tags: [checklist]
+      summary: Reset all packed status to unpacked
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Reset done
+
+  # NOTES
+  /trips/{tripId}/notes:
+    get:
+      operationId: listNotes
+      tags: [notes]
+      summary: List notes for a trip
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Notes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Note"
+    post:
+      operationId: createNote
+      tags: [notes]
+      summary: Create a note
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NoteInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+
+  /trips/{tripId}/notes/{noteId}:
+    patch:
+      operationId: updateNote
+      tags: [notes]
+      summary: Update a note
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NoteUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+    delete:
+      operationId: deleteNote
+      tags: [notes]
+      summary: Delete a note
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ANALYTICS
+  /analytics/overview:
+    get:
+      operationId: getAnalyticsOverview
+      tags: [analytics]
+      summary: Admin analytics overview
+      responses:
+        "200":
+          description: Analytics data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyticsOverview"
+
+  /analytics/users:
+    get:
+      operationId: getAdminUsers
+      tags: [analytics]
+      summary: List all users (admin)
+      responses:
+        "200":
+          description: User list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminUser"
+
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
 
+    # AUTH SCHEMAS
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    SignupInput:
+      type: object
+      required: [name, email, password]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    AuthResponse:
+      type: object
+      required: [user, token]
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        token:
+          type: string
+
+    User:
+      type: object
+      required: [id, name, email, role]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        avatarUrl:
+          type: ["string", "null"]
+        language:
+          type: string
+        role:
+          type: string
+          enum: [user, admin]
+        createdAt:
+          type: string
+          format: date-time
+
+    ProfileUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        avatarUrl:
+          type: ["string", "null"]
+        language:
+          type: string
+
+    AdminUser:
+      type: object
+      required: [id, name, email, role, tripCount, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+        tripCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    # TRIP SCHEMAS
+    Trip:
+      type: object
+      required: [id, name, startDate, endDate, isPublic, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        coverPhoto:
+          type: ["string", "null"]
+        isPublic:
+          type: boolean
+        stopCount:
+          type: integer
+        totalBudget:
+          type: ["number", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    TripDetail:
+      type: object
+      required: [id, name, startDate, endDate, isPublic, stops]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        coverPhoto:
+          type: ["string", "null"]
+        isPublic:
+          type: boolean
+        totalBudget:
+          type: ["number", "null"]
+        stops:
+          type: array
+          items:
+            $ref: "#/components/schemas/StopDetail"
+        createdAt:
+          type: string
+          format: date-time
+
+    TripInput:
+      type: object
+      required: [name, startDate, endDate]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        coverPhoto:
+          type: string
+        totalBudget:
+          type: number
+
+    TripUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        coverPhoto:
+          type: ["string", "null"]
+        totalBudget:
+          type: ["number", "null"]
+
+    ShareUpdate:
+      type: object
+      required: [isPublic]
+      properties:
+        isPublic:
+          type: boolean
+
+    Dashboard:
+      type: object
+      required: [totalTrips, upcomingTrips, totalBudgetSpent, recentTrips, popularCities]
+      properties:
+        totalTrips:
+          type: integer
+        upcomingTrips:
+          type: integer
+        totalBudgetSpent:
+          type: number
+        recentTrips:
+          type: array
+          items:
+            $ref: "#/components/schemas/Trip"
+        popularCities:
+          type: array
+          items:
+            $ref: "#/components/schemas/City"
+
+    BudgetBreakdown:
+      type: object
+      required: [totalBudget, totalEstimated, breakdown, dailyCosts, overBudgetDays]
+      properties:
+        totalBudget:
+          type: ["number", "null"]
+        totalEstimated:
+          type: number
+        breakdown:
+          type: object
+          properties:
+            transport:
+              type: number
+            accommodation:
+              type: number
+            activities:
+              type: number
+            meals:
+              type: number
+            other:
+              type: number
+        dailyCosts:
+          type: array
+          items:
+            type: object
+            required: [date, cost]
+            properties:
+              date:
+                type: string
+                format: date
+              cost:
+                type: number
+        overBudgetDays:
+          type: array
+          items:
+            type: string
+            format: date
+
+    # STOP SCHEMAS
+    Stop:
+      type: object
+      required: [id, tripId, cityId, arrivalDate, departureDate, orderIndex]
+      properties:
+        id:
+          type: integer
+        tripId:
+          type: integer
+        cityId:
+          type: integer
+        city:
+          $ref: "#/components/schemas/City"
+        arrivalDate:
+          type: string
+          format: date
+        departureDate:
+          type: string
+          format: date
+        orderIndex:
+          type: integer
+        accommodation:
+          type: ["string", "null"]
+        accommodationCost:
+          type: ["number", "null"]
+        transportCost:
+          type: ["number", "null"]
+        mealsCost:
+          type: ["number", "null"]
+
+    StopDetail:
+      type: object
+      required: [id, tripId, cityId, arrivalDate, departureDate, orderIndex, activities]
+      properties:
+        id:
+          type: integer
+        tripId:
+          type: integer
+        cityId:
+          type: integer
+        city:
+          $ref: "#/components/schemas/City"
+        arrivalDate:
+          type: string
+          format: date
+        departureDate:
+          type: string
+          format: date
+        orderIndex:
+          type: integer
+        accommodation:
+          type: ["string", "null"]
+        accommodationCost:
+          type: ["number", "null"]
+        transportCost:
+          type: ["number", "null"]
+        mealsCost:
+          type: ["number", "null"]
+        activities:
+          type: array
+          items:
+            $ref: "#/components/schemas/StopActivity"
+
+    StopInput:
+      type: object
+      required: [cityId, arrivalDate, departureDate]
+      properties:
+        cityId:
+          type: integer
+        arrivalDate:
+          type: string
+          format: date
+        departureDate:
+          type: string
+          format: date
+        orderIndex:
+          type: integer
+        accommodation:
+          type: string
+        accommodationCost:
+          type: number
+        transportCost:
+          type: number
+        mealsCost:
+          type: number
+
+    StopUpdate:
+      type: object
+      properties:
+        cityId:
+          type: integer
+        arrivalDate:
+          type: string
+          format: date
+        departureDate:
+          type: string
+          format: date
+        orderIndex:
+          type: integer
+        accommodation:
+          type: ["string", "null"]
+        accommodationCost:
+          type: ["number", "null"]
+        transportCost:
+          type: ["number", "null"]
+        mealsCost:
+          type: ["number", "null"]
+
+    StopActivity:
+      type: object
+      required: [id, stopId, activityId, activity]
+      properties:
+        id:
+          type: integer
+        stopId:
+          type: integer
+        activityId:
+          type: integer
+        scheduledTime:
+          type: ["string", "null"]
+        activity:
+          $ref: "#/components/schemas/Activity"
+
+    StopActivityInput:
+      type: object
+      required: [activityId]
+      properties:
+        activityId:
+          type: integer
+        scheduledTime:
+          type: string
+
+    # CITY SCHEMAS
+    City:
+      type: object
+      required: [id, name, country, region]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        country:
+          type: string
+        region:
+          type: string
+        description:
+          type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+        costIndex:
+          type: ["number", "null"]
+        popularityScore:
+          type: ["number", "null"]
+        currency:
+          type: ["string", "null"]
+        timezone:
+          type: ["string", "null"]
+
+    # ACTIVITY SCHEMAS
+    Activity:
+      type: object
+      required: [id, cityId, name, type, estimatedCost, durationHours]
+      properties:
+        id:
+          type: integer
+        cityId:
+          type: integer
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        type:
+          type: string
+          enum: [sightseeing, food, adventure, culture, shopping, wellness, nightlife, other]
+        estimatedCost:
+          type: number
+        durationHours:
+          type: number
+        imageUrl:
+          type: ["string", "null"]
+        rating:
+          type: ["number", "null"]
+
+    # CHECKLIST SCHEMAS
+    ChecklistItem:
+      type: object
+      required: [id, tripId, label, isPacked, category]
+      properties:
+        id:
+          type: integer
+        tripId:
+          type: integer
+        label:
+          type: string
+        isPacked:
+          type: boolean
+        category:
+          type: string
+          enum: [clothing, documents, electronics, toiletries, other]
+        createdAt:
+          type: string
+          format: date-time
+
+    ChecklistItemInput:
+      type: object
+      required: [label, category]
+      properties:
+        label:
+          type: string
+        category:
+          type: string
+          enum: [clothing, documents, electronics, toiletries, other]
+
+    ChecklistItemUpdate:
+      type: object
+      properties:
+        label:
+          type: string
+        isPacked:
+          type: boolean
+        category:
+          type: string
+          enum: [clothing, documents, electronics, toiletries, other]
+
+    # NOTE SCHEMAS
+    Note:
+      type: object
+      required: [id, tripId, title, content, createdAt]
+      properties:
+        id:
+          type: integer
+        tripId:
+          type: integer
+        stopId:
+          type: ["integer", "null"]
+        title:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    NoteInput:
+      type: object
+      required: [title, content]
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        stopId:
+          type: integer
+
+    NoteUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        stopId:
+          type: ["integer", "null"]
+
+    # ANALYTICS SCHEMAS
+    AnalyticsOverview:
+      type: object
+      required: [totalUsers, totalTrips, totalCities, tripsPerDay, topCities, topActivities, userEngagement]
+      properties:
+        totalUsers:
+          type: integer
+        totalTrips:
+          type: integer
+        totalCities:
+          type: integer
+        tripsPerDay:
+          type: array
+          items:
+            type: object
+            required: [date, count]
+            properties:
+              date:
+                type: string
+                format: date
+              count:
+                type: integer
+        topCities:
+          type: array
+          items:
+            type: object
+            required: [city, tripCount]
+            properties:
+              city:
+                $ref: "#/components/schemas/City"
+              tripCount:
+                type: integer
+        topActivities:
+          type: array
+          items:
+            type: object
+            required: [activity, useCount]
+            properties:
+              activity:
+                $ref: "#/components/schemas/Activity"
+              useCount:
+                type: integer
+        userEngagement:
+          type: object
+          required: [avgTripsPerUser, avgStopsPerTrip, avgActivitiesPerStop]
+          properties:
+            avgTripsPerUser:
+              type: number
+            avgStopsPerTrip:
+              type: number
+            avgActivitiesPerStop:
+              type: number

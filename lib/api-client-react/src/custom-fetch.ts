@@ -44,6 +44,11 @@ export function setAuthTokenGetter(getter: AuthTokenGetter | null): void {
   _authTokenGetter = getter;
 }
 
+// Automatically set the auth token getter to read from localStorage
+if (typeof window !== "undefined") {
+  setAuthTokenGetter(() => localStorage.getItem("traveloop_token"));
+}
+
 function isRequest(input: RequestInfo | URL): input is Request {
   return typeof Request !== "undefined" && input instanceof Request;
 }
