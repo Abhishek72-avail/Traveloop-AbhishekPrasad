@@ -1,6 +1,6 @@
 import { useParams, useLocation } from "wouter";
 import { useGetTrip, useListStops, useCreateStop, useDeleteStop, getListStopsQueryKey } from "@workspace/api-client-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, Plus, MapPin, Trash2, Clock } from "lucide-react";
