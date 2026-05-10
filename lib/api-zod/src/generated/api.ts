@@ -42,6 +42,7 @@ export const SignupBody = zod.object({
   name: zod.string(),
   email: zod.string().email(),
   password: zod.string(),
+  avatarUrl: zod.string().optional().nullish(),
 });
 
 /**
