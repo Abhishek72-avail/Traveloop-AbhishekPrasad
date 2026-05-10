@@ -1,7 +1,7 @@
 # Traveloop - Project Documentation
 
 ## 1. Project Proposal & Overview
-**Traveloop** is an AI-powered enterprise-grade travel planning platform. It allows users to seamlessly plan trips, build day-by-day itineraries, discover cities and activities, track travel budgets, manage packing lists, and share their journeys. 
+**Traveloop** is an enterprise-grade travel planning platform. It allows users to seamlessly plan trips, build day-by-day itineraries, discover cities and activities, track travel budgets, manage packing lists, and share their journeys. 
 
 The goal of this application is to replace fragmented travel tools (spreadsheets, note apps, separate booking trackers) into one unified, highly visual, and modern dashboard.
 
